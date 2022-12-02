@@ -1,32 +1,33 @@
 const mongoose = require("mongoose");
+const Schema = mongoose.Schema;
 
-const TodoSchema = new mongoose.Schema({
-  user: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "users",
-  },
-  name: {
-    type: String,
-  },
-  text: {
-    type: String,
-    required: true,
-  },
-  completed: {
-    type: Boolean,
-    default: false,
-  },
-  tags: [
-    {
-      name: {
-        type: String,
-      },
+const TodoSchema = new Schema(
+  {
+    title: {
+      type: String,
+      required: [true, "Title of todo is required"],
+      maxLength: [30, "Maximum length of title is 30 charecters"],
     },
-  ],
-  date: {
-    type: Date,
-    default: Date.now,
+    tasks: {
+      type: [
+        {
+          type: String,
+        },
+      ],
+    },
+    isCompleted: {
+      type: Boolean,
+      default: false,
+    },
+    user: {
+      type: Schema.Types.ObjectId,
+      ref: "users",
+      required: [true, "User Id is required to create a todo"],
+    },
   },
-});
+  {
+    timestamps: true,
+  }
+);
 
 module.exports = Todo = mongoose.model("todo", TodoSchema);
