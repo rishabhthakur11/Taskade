@@ -3,7 +3,6 @@ const router = express.Router();
 const auth = require("../../middleware/auth");
 const Todo = require("../../model/Todo");
 const User = require("../../model/User");
-const Tag = require("../../model/Tag");
 
 // @route    GET api/todos
 // @desc     Get all todos
@@ -26,32 +25,52 @@ router.get("/", auth, async (req, res) => {
 // @access   Private
 
 router.post("/", auth, async (req, res) => {
-  // Getting user input
-  const { text, tagId } = req.body;
-  // validating the user
-  if (!(text && tagId)) {
-    res.status(400).send("All inputs are required");
+  // getting user input
+  const { title, tasks } = req.body;
+  // Validate user input
+  if (!(title && tasks)) {
+    res.status(400).send("All input is required");
   }
   try {
     const user = await User.findById(req.user.id).select("-password");
-    const tag = await Tag.findById(req.body.tagId);
-    let createdTag = {};
-    if (tag === null) {
-      const newTag = new Tag({
-        name: req.body.tagId,
-      });
-      createdTag = await newTag.save();
-    }
     const newTodo = new Todo({
-      name: user.name,
-      tags: tag == null ? [createdTag] : [tag],
-      text: req.body.text,
-      user: req.user.id,
+      title,
+      tasks: tasks,
+      user: user.id,
     });
     const todo = await newTodo.save();
     res.json(todo);
   } catch (error) {
     console.error(error.message);
+    res.status(500).send("Server Error");
+  }
+});
+
+// @route    PUT api/todos/:id
+// @desc     Update a todo
+// @access   Private
+
+router.put("/:id", async (req, res) => {
+  const { title, tasks } = req.body;
+
+  // validation
+  if (!(title && tasks)) {
+    res.status(400).send("All input is required");
+  }
+  try {
+    const todo = await Todo.findById(req.params.id);
+    // Check for ObjectId format and todo
+    if (!req.params.id.match(/^[0-9a-fA-F]{24}$/) || !todo) {
+      return res.status(404).json({ msg: "Todo not found" });
+    }
+    if (todo) {
+      todo.title = title;
+      todo.tasks = tasks;
+    }
+    await todo.save();
+    res.json(todo);
+  } catch (error) {
+    console.log(error.message);
     res.status(500).send("Server Error");
   }
 });
