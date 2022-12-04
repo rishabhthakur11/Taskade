@@ -36,13 +36,6 @@ To get started you can simply clone the repo and install the dependencies in the
 
 ```
 
-3. Get - Get todo tags
-
-```
-`../api/tags`,
-
-```
-
 4. Get/Post/Put/Delete Todos (Add/Update/Complete/Uncomplete/Delete/Get)
 
 ```
