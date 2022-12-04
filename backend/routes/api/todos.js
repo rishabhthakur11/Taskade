@@ -74,4 +74,55 @@ router.put("/:id", async (req, res) => {
     res.status(500).send("Server Error");
   }
 });
+
+// @route    PUT api/todos/:id
+// @desc     delete a todo
+// @access   Private
+
+router.delete("/:id", auth, async (req, res) => {
+  try {
+    const todo = await Todo.findById(req.params.id);
+    // Check for ObjectId format and todo
+    if (!req.params.id.match(/^[0-9a-fA-F]{24}$/) || !todo) {
+      return res.status(404).json({ msg: "Todo not found" });
+    }
+    // Check user if the todo belongs to authenticated user
+    if (todo.user.toString() !== req.user.id) {
+      return res.status(401).json({ msg: "User not authorized" });
+    }
+    await todo.remove();
+    res.json({ msg: "Todo removed" });
+  } catch (error) {
+    console.error(err.message);
+    res.status(500).send("Server Error");
+  }
+});
+// @route    PUT api/todos/complete/:id
+// @desc     Complete a todo
+// @access   Private
+
+router.put("/complete/:id", auth, async (req, res) => {
+  try {
+    const todo = await Todo.findById(req.params.id);
+    // Check for ObjectId format and todo
+    if (!req.params.id.match(/^[0-9a-fA-F]{24}$/) || !todo) {
+      return res.status(404).json({ msg: "Todo not found" });
+    }
+    // Check user if the todo belongs to authenticated user
+    if (todo.user.toString() !== req.user.id) {
+      return res.status(401).json({ msg: "User not authorized" });
+    }
+    //Check if the todo has already been completed
+    if (todo) {
+      todo.isCompleted = !todo.isCompleted;
+    }
+    await todo.save();
+
+    res.json(todo.isCompleted);
+  } catch (error) {
+    console.error(err.message);
+    res.status(500).send("Server Error");
+  }
+});
+
 module.exports = router;
